@@ -244,4 +244,6 @@ for idx, img_name in enumerate(sorted(os.listdir(img_path))):
 	print(all_dets)
 	#cv2.imshow('img', img)
 	#cv2.waitKey(0)
-	cv2.imwrite('/content/drive/My Drive/rcnn/result'.format(idx),img)
+	#cv2.imwrite('/content/drive/My Drive/rcnn/result',img)
+	cv2.imwrite('/content/drive/My Drive/rcnn/result/{}.png'.format(idx),img)
+
