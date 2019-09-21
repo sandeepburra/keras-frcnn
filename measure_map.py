@@ -102,7 +102,7 @@ else:
 
 config_output_filename = options.config_filename
 
-with open(config_output_filename, 'r') as f_in:
+with open(config_output_filename, 'rb') as f_in:
 	C = pickle.load(f_in)
 
 # turn off any data augmentation at test time
