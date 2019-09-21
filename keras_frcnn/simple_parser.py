@@ -50,7 +50,7 @@ def get_data(input_path):
 		all_data = []
 		for key in all_imgs:
 			all_data.append(all_imgs[key])
-		
+		print(len(all_data))
 		# make sure the bg class is last in the list
 		if found_bg:
 			if class_mapping['bg'] != len(class_mapping) - 1:
