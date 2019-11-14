@@ -145,7 +145,7 @@ if not options.input_weight_path:
 	start_epoch = 0
 	result_df = pd.DataFrame(columns=['mean_overlapping_bboxes', 'class_acc', 'loss_rpn_cls', 'loss_rpn_regr', 'loss_class_cls', 'loss_class_regr', 'curr_loss'])
 else:
-	result_df = pd.read_csv(result_path)
+	result_df = pd.read_csv(C.result_path)
 	start_epoch = len(result_df)
 	print('Continue training based on previous trained model')
 	print('Loading weights from {}'.format(C.model_path))
@@ -295,7 +295,7 @@ for epoch_num in range(start_epoch,num_epochs):
 					   'curr_loss':round(curr_loss, 3)}
 
 				result_df = result_df.append(new_row, ignore_index=True)
-				result_df.to_csv(result_path, index=0)
+				result_df.to_csv(C.result_path, index=0)
 				
 
 				break
