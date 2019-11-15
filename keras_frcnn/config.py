@@ -14,6 +14,7 @@ class Config:
 		self.use_vertical_flips = False
 		self.rot_90 = False
 		self.result_path = False
+		self.resume = False
 
 		# anchor box scales
 		self.anchor_box_scales = [128, 256, 512]
