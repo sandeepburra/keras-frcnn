@@ -23,7 +23,7 @@ parser.add_option("--config_filename", dest="config_filename", help=
 				"Location to read the metadata related to the training (generated when training).",
 				default="config.pickle")
 parser.add_option("--network", dest="network", help="Base network to use. Supports vgg or resnet50.", default='resnet50')
-
+parser.add_option("--result_path_2class", dest="result_path", help="result losses csv file path.", default= False)
 (options, args) = parser.parse_args()
 
 if not options.test_path:   # if filename is not given
@@ -44,7 +44,7 @@ elif C.network == 'vgg':
 C.use_horizontal_flips = False
 C.use_vertical_flips = False
 C.rot_90 = False
-
+C.result_path =  options.result_path
 img_path = options.test_path
 
 def format_img_size(img, C):
@@ -146,7 +146,7 @@ classes = {}
 bbox_threshold = 0.8
 
 visualise = True
-
+result_df = pd.DataFrame(columns=['name', 'label', 'x1', 'y1', 'x2', 'y2', 'prob'])
 for idx, img_name in enumerate(sorted(os.listdir(img_path))):
 	if not img_name.lower().endswith(('.bmp', '.jpeg', '.jpg', '.png', '.tif', '.tiff')):
 		continue
@@ -239,11 +239,21 @@ for idx, img_name in enumerate(sorted(os.listdir(img_path))):
 			cv2.rectangle(img, (textOrg[0] - 5, textOrg[1]+baseLine - 5), (textOrg[0]+retval[0] + 5, textOrg[1]-retval[1] - 5), (0, 0, 0), 2)
 			cv2.rectangle(img, (textOrg[0] - 5,textOrg[1]+baseLine - 5), (textOrg[0]+retval[0] + 5, textOrg[1]-retval[1] - 5), (255, 255, 255), -1)
 			cv2.putText(img, textLabel, textOrg, cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 0), 1)
+			new_row = {'name':img_name,
+				   'label': key,
+				   'x1' : real_x1,
+				   'y1' : real_y1,
+				   'x2' : real_x2,
+				   'y2' : real_y2,
+				   'prob' : 100*new_probs[jk]
+				  }
+			result_df = result_df.append(new_row, ignore_index=True)
 
 	print('Elapsed time = {}'.format(time.time() - st))
-	print(all_dets)
+	#print(all_dets)
 	#cv2.imshow('img', img)
 	#cv2.waitKey(0)
 	#cv2.imwrite('/content/drive/My Drive/rcnn/result',img)
-	cv2.imwrite('/content/drive/My Drive/rcnn/result/{}.png'.format(idx),img)
+	#cv2.imwrite('/content/drive/My Drive/rcnn/result/{}.png'.format(idx),img)
 
+result_df.to_csv(C.result_path, index=0)
