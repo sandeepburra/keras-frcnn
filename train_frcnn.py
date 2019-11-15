@@ -35,6 +35,7 @@ parser.add_option("--config_filename", dest="config_filename", help=
 				default="config.pickle")
 parser.add_option("--output_weight_path", dest="output_weight_path", help="Output path for weights.", default='./model_frcnn.hdf5')
 parser.add_option("--result_path", dest="result_path", help="result losses csv file path.", default= False)
+parser.add_option("--is_it_resume", dest="resume", help="yes if you are resuming.", default= False)
 parser.add_option("--input_weight_path", dest="input_weight_path", help="Input path for weights. If not specified, will try to load default weights provided by keras." )
 
 (options, args) = parser.parse_args()
@@ -56,6 +57,7 @@ C.use_horizontal_flips = bool(options.horizontal_flips)
 C.use_vertical_flips = bool(options.vertical_flips)
 C.rot_90 = bool(options.rot_90)
 C.result_path =  options.result_path
+C.resume =  bool(options.resume)
 C.model_path = options.output_weight_path
 C.num_rois = int(options.num_rois)
 
@@ -133,7 +135,7 @@ model_classifier = Model([img_input, roi_input], classifier)
 
 # this is a model that holds both the RPN and the classifier, used to load/save weights for the models
 model_all = Model([img_input, roi_input], rpn[:2] + classifier)
-if not options.input_weight_path:
+if not C.resume:
 	try:
 		print('loading weights from {}'.format(C.base_net_weights))
 		model_rpn.load_weights(C.base_net_weights, by_name=True)
@@ -168,7 +170,7 @@ losses = np.zeros((epoch_length, 5))
 rpn_accuracy_rpn_monitor = []
 rpn_accuracy_for_epoch = []
 start_time = time.time()
-if not options.input_weight_path:
+if not  C.resume:
 	best_loss = np.Inf
 else:
 	best_loss = min(result_df["curr_loss"])
