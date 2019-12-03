@@ -267,6 +267,8 @@ for idx, img_data in enumerate(test_imgs):
 
 
 	print('Elapsed time = {}'.format(time.time() - st))
+	print(all_dets)
+	print(img_data['bboxes'])
 	t, p = get_map(all_dets, img_data['bboxes'], (fx, fy))
 	for key in t.keys():
 		if key not in T:
