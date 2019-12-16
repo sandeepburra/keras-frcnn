@@ -306,7 +306,9 @@ for epoch_num in range(start_epoch,num_epochs):
 					if C.verbose:
 						print('Total loss decreased from {} to {}, saving weights'.format(best_loss,curr_loss))
 					best_loss = curr_loss
-					model_all.save_weights(C.model_path)
+					path = C.model_path
+					path_name = path.format(curr_loss)
+					model_all.save_weights(path_name)
 				new_row = {'mean_overlapping_bboxes':round(mean_overlapping_bboxes, 3), 
 					   'class_acc':round(class_acc, 3), 
 					   'loss_rpn_cls':round(loss_rpn_cls, 3), 
