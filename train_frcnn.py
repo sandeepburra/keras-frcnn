@@ -15,6 +15,8 @@ from keras_frcnn import config, data_generators
 from keras_frcnn import losses as losses
 import keras_frcnn.roi_helpers as roi_helpers
 from keras.utils import generic_utils
+import tensorflow as tf
+from keras.callbacks import TensorBoard
 
 sys.setrecursionlimit(40000)
 
@@ -37,6 +39,7 @@ parser.add_option("--output_weight_path", dest="output_weight_path", help="Outpu
 parser.add_option("--result_path", dest="result_path", help="result losses csv file path.", default= False)
 parser.add_option("--is_it_resume", dest="resume", help="yes if you are resuming.", default= False)
 parser.add_option("--input_weight_path", dest="input_weight_path", help="Input path for weights. If not specified, will try to load default weights provided by keras." )
+parser.add_option("--log_path", dest="logs", help="path to save logs file for tensorboard", default= False)
 
 (options, args) = parser.parse_args()
 
@@ -179,6 +182,19 @@ class_mapping_inv = {v: k for k, v in class_mapping.items()}
 print('Starting training')
 
 vis = True
+def write_log(callback, names, logs, batch_no):
+    for name, value in zip(names, logs):
+        summary = tf.Summary()
+        summary_value = summary.value.add()
+        summary_value.simple_value = value
+        summary_value.tag = name
+        callback.writer.add_summary(summary, batch_no)
+        callback.writer.flush()
+log_path = options.logs
+callback = TensorBoard(log_path)
+callback.set_model(model_rpn)
+train_names = ['train_loss', 'train_mae']
+val_names = ['val_loss', 'val_mae']
 
 for epoch_num in range(start_epoch,num_epochs):
 
@@ -196,8 +212,11 @@ for epoch_num in range(start_epoch,num_epochs):
 					print('RPN is not producing bounding boxes that overlap the ground truth boxes. Check RPN settings or keep training.')
 
 			X, Y, img_data = next(data_gen_train)
+			X_val, Y_val, img_data_val = next(data_gen_val)
 
 			loss_rpn = model_rpn.train_on_batch(X, Y)
+			loss_rpn_val = model_rpn.test_on_batch(X_val, Y_val)
+
 
 			P_rpn = model_rpn.predict_on_batch(X)
 
@@ -305,5 +324,7 @@ for epoch_num in range(start_epoch,num_epochs):
 		except Exception as e:
 			print('Exception: {}'.format(e))
 			continue
+	write_log(callback, train_names, loss_rpn, epoch_num)
+	write_log(callback, val_names, loss_rpn_val, epoch_num)
 
 print('Training complete, exiting.')
