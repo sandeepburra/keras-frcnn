@@ -182,18 +182,21 @@ class_mapping_inv = {v: k for k, v in class_mapping.items()}
 print('Starting training')
 
 vis = True
-def named_logs(names, logs):
-  result = {}
-  for l in zip(names, logs):
-    result[l[0]] = l[1]
-  return result
+def write_log(callback, names, logs, batch_no):
+    for name, value in zip(names, logs):
+        summary = tf.Summary()
+        summary_value = summary.value.add()
+        summary_value.simple_value = value
+        summary_value.tag = name
+        callback.writer.add_summary(summary, batch_no)
+        callback.writer.flush()
 
 log_path = options.logs
-callback = TensorBoard(log_path)
-callback.set_model(model_rpn)
-train_names = ['train_loss', 'train_mae']
-val_names = ['val_loss', 'val_mae']
-
+callback1 = TensorBoard(log_path+"/train")
+callback1.set_model(model_rpn)
+callback2 = TensorBoard(log_path+"/val")
+callback2.set_model(model_rpn)
+names = ['loss', 'mae']
 for epoch_num in range(start_epoch,num_epochs):
 
 	progbar = generic_utils.Progbar(epoch_length)
@@ -324,8 +327,7 @@ for epoch_num in range(start_epoch,num_epochs):
 		except Exception as e:
 			print('Exception: {}'.format(e))
 			continue
-	tensorboard.on_epoch_end(epoch_num, named_logs(train_names, loss_rpn))
-	tensorboard.on_test_end(named_logs(train_names, loss_rpn_val))
-	
+	write_log(callback1, names, loss_rpn, epoch_num)
+	write_log(callback2, names, loss_rpn_val, epoch_num)
 tensorboard.on_train_end(None)
 print('Training complete, exiting.')
