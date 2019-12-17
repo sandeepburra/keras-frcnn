@@ -190,9 +190,12 @@ def write_log(callback, names, logs, batch_no):
         summary_value.tag = name
         callback.writer.add_summary(summary, batch_no)
         callback.writer.flush()
+
 log_path = options.logs
 callback = TensorBoard(log_path)
 callback.set_model(model_rpn)
+callback_1 = TensorBoard(log_path)
+callback_1.set_model(model_rpn)
 train_names = ['train_loss', 'train_mae']
 val_names = ['val_loss', 'val_mae']
 
@@ -327,6 +330,6 @@ for epoch_num in range(start_epoch,num_epochs):
 			print('Exception: {}'.format(e))
 			continue
 	write_log(callback, train_names, loss_rpn, epoch_num)
-	write_log(callback, train_names, loss_rpn_val, epoch_num)
+	write_log(callback_1, val_names, loss_rpn_val, epoch_num)
 
 print('Training complete, exiting.')
