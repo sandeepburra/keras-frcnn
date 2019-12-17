@@ -182,20 +182,15 @@ class_mapping_inv = {v: k for k, v in class_mapping.items()}
 print('Starting training')
 
 vis = True
-def write_log(callback, names, logs, batch_no):
-    for name, value in zip(names, logs):
-        summary = tf.Summary()
-        summary_value = summary.value.add()
-        summary_value.simple_value = value
-        summary_value.tag = name
-        callback.writer.add_summary(summary, batch_no)
-        callback.writer.flush()
+def named_logs(model,names, logs):
+  result = {}
+  for l in zip(names, logs):
+    result[l[0]] = l[1]
+  return result
 
 log_path = options.logs
 callback = TensorBoard(log_path)
 callback.set_model(model_rpn)
-callback_1 = TensorBoard(log_path)
-callback_1.set_model(model_rpn)
 train_names = ['train_loss', 'train_mae']
 val_names = ['val_loss', 'val_mae']
 
@@ -329,7 +324,8 @@ for epoch_num in range(start_epoch,num_epochs):
 		except Exception as e:
 			print('Exception: {}'.format(e))
 			continue
-	write_log(callback, train_names, loss_rpn, epoch_num)
-	write_log(callback_1, val_names, loss_rpn_val, epoch_num)
-
+	tensorboard.on_epoch_end(epoch_num, named_logs(model_rpn,train_names, loss_rpn))
+	tensorboard.on_epoch_end(epoch_num, named_logs(model_rpn,val_names, loss_rpn_val))
+	
+tensorboard.on_train_end(None)
 print('Training complete, exiting.')
