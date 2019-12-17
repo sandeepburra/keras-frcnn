@@ -329,5 +329,4 @@ for epoch_num in range(start_epoch,num_epochs):
 			continue
 	write_log(callback1, names, loss_rpn, epoch_num)
 	write_log(callback2, names, loss_rpn_val, epoch_num)
-tensorboard.on_train_end(None)
 print('Training complete, exiting.')
