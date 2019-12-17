@@ -182,7 +182,7 @@ class_mapping_inv = {v: k for k, v in class_mapping.items()}
 print('Starting training')
 
 vis = True
-def named_logs(model,names, logs):
+def named_logs(names, logs):
   result = {}
   for l in zip(names, logs):
     result[l[0]] = l[1]
@@ -324,8 +324,8 @@ for epoch_num in range(start_epoch,num_epochs):
 		except Exception as e:
 			print('Exception: {}'.format(e))
 			continue
-	tensorboard.on_epoch_end(epoch_num, named_logs(model_rpn,train_names, loss_rpn))
-	tensorboard.on_epoch_end(epoch_num, named_logs(model_rpn,val_names, loss_rpn_val))
+	tensorboard.on_epoch_end(epoch_num, named_logs(train_names, loss_rpn))
+	tensorboard.on_epoch_end(epoch_num, named_logs(val_names, loss_rpn_val))
 	
 tensorboard.on_train_end(None)
 print('Training complete, exiting.')
