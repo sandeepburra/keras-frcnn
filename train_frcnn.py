@@ -196,7 +196,12 @@ callback1 = TensorBoard(log_path+"/train")
 callback1.set_model(model_rpn)
 callback2 = TensorBoard(log_path+"/val")
 callback2.set_model(model_rpn)
-names = ['loss', 'mae']
+callback3 = TensorBoard(log_path+"/train")
+callback3.set_model(model_classifier)
+callback4 = TensorBoard(log_path+"/val")
+callback4.set_model(model_classifier)
+names_1 = ['RPN_classifier_loss', 'RPN_regressor_loss']
+names_2 = ['RCNN_classifier_loss', 'RCNN_regressor_loss']
 for epoch_num in range(start_epoch,num_epochs):
 
 	progbar = generic_utils.Progbar(epoch_length)
@@ -218,7 +223,7 @@ for epoch_num in range(start_epoch,num_epochs):
 			loss_rpn = model_rpn.train_on_batch(X, Y)
 			loss_rpn_val = model_rpn.test_on_batch(X_val, Y_val)
 
-
+#################################################################################################################
 			P_rpn = model_rpn.predict_on_batch(X)
 
 			R = roi_helpers.rpn_to_roi(P_rpn[0], P_rpn[1], C, K.image_dim_ordering(), use_regr=True, overlap_thresh=0.7, max_boxes=300)
@@ -265,8 +270,56 @@ for epoch_num in range(start_epoch,num_epochs):
 					sel_samples = random.choice(neg_samples)
 				else:
 					sel_samples = random.choice(pos_samples)
+##############################################################################################################################
+			P_rpn_val = model_rpn.predict_on_batch(X_val)
+
+			R_val = roi_helpers.rpn_to_roi(P_rpn_val[0], P_rpn_val[1], C, K.image_dim_ordering(), use_regr=True, overlap_thresh=0.7, max_boxes=300)
+			# note: calc_iou converts from (x1,y1,x2,y2) to (x,y,w,h) format
+			X2_val, Y1_val, Y2_val, IouS_val = roi_helpers.calc_iou(R_val, img_data_val, C, class_mapping)
+
+			
+
+			neg_samples_val = np.where(Y1_val[0, :, -1] == 1)
+			pos_samples_val = np.where(Y1_val[0, :, -1] == 0)
+
+			if len(neg_samples_val) > 0:
+				neg_samples_val = neg_samples_val[0]
+			else:
+				neg_samples_val = []
+
+			if len(pos_samples_val) > 0:
+				pos_samples_val = pos_samples_val[0]
+			else:
+				pos_samples_val = []
+			
+			
+			if C.num_rois > 1:
+				if len(pos_samples_val) < C.num_rois//2:
+					selected_pos_samples_val = pos_samples_val.tolist()
+				else:
+					selected_pos_samples_val = np.random.choice(pos_samples_val, C.num_rois//2, replace=False).tolist()
+				try:
+					selected_neg_samples_val = np.random.choice(neg_samples_val, C.num_rois - len(selected_pos_samples_val), replace=False).tolist()
+				except:
+					selected_neg_samples_val = np.random.choice(neg_samples_val, C.num_rois - len(selected_pos_samples_val), replace=True).tolist()
+
+				sel_samples_val = selected_pos_samples_val + selected_neg_samples_val
+			else:
+				# in the extreme case where num_rois = 1, we pick a random pos or neg sample
+				selected_pos_samples_val = pos_samples_val.tolist()
+				selected_neg_samples_val = neg_samples_val.tolist()
+				if np.random.randint(0, 2):
+					sel_samples_val = random.choice(neg_samples_val)
+				else:
+					sel_samples_val = random.choice(pos_samples_val)
+
+
+
+################################################################################################################################
 
 			loss_class = model_classifier.train_on_batch([X, X2[:, sel_samples, :]], [Y1[:, sel_samples, :], Y2[:, sel_samples, :]])
+			loss_class_val = model_classifier.test_on_batch([X_val, X2_val[:, sel_samples_val, :]], [Y1_val[:, sel_samples_val, :], Y2_val[:, sel_samples_val, :]])
+
 
 			losses[iter_num, 0] = loss_rpn[1]
 			losses[iter_num, 1] = loss_rpn[2]
@@ -327,6 +380,8 @@ for epoch_num in range(start_epoch,num_epochs):
 		except Exception as e:
 			print('Exception: {}'.format(e))
 			continue
-	write_log(callback1, names, loss_rpn, epoch_num)
-	write_log(callback2, names, loss_rpn_val, epoch_num)
+	write_log(callback1, names_1, loss_rpn, epoch_num)
+	write_log(callback2, names_2, loss_rpn_val, epoch_num)
+	write_log(callback3, names_3, loss_class, epoch_num)
+	write_log(callback4, names_4, loss_class_val, epoch_num)
 print('Training complete, exiting.')
