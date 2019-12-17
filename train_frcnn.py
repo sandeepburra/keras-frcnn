@@ -325,7 +325,7 @@ for epoch_num in range(start_epoch,num_epochs):
 			print('Exception: {}'.format(e))
 			continue
 	tensorboard.on_epoch_end(epoch_num, named_logs(train_names, loss_rpn))
-	tensorboard.on_epoch_end(epoch_num, named_logs(val_names, loss_rpn_val))
+	tensorboard.on_test_end(named_logs(train_names, loss_rpn_val))
 	
 tensorboard.on_train_end(None)
 print('Training complete, exiting.')
