@@ -327,6 +327,6 @@ for epoch_num in range(start_epoch,num_epochs):
 			print('Exception: {}'.format(e))
 			continue
 	write_log(callback, train_names, loss_rpn, epoch_num)
-	write_log(callback, val_names, loss_rpn_val, epoch_num)
+	write_log(callback, train_names, loss_rpn_val, epoch_num)
 
 print('Training complete, exiting.')
