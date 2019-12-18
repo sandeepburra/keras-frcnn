@@ -192,13 +192,13 @@ def write_log(callback, names, logs, batch_no):
         callback.writer.flush()
 
 log_path = options.logs
-callback1 = TensorBoard(log_path+"/train")
+callback1 = TensorBoard(log_path+"/TrainLoss/RPN")
 callback1.set_model(model_rpn)
-callback2 = TensorBoard(log_path+"/val")
+callback2 = TensorBoard(log_path+"/ValLoss/RPN")
 callback2.set_model(model_rpn)
-callback3 = TensorBoard(log_path+"/train")
+callback3 = TensorBoard(log_path+"/TrainLoss/RCNN")
 callback3.set_model(model_classifier)
-callback4 = TensorBoard(log_path+"/val")
+callback4 = TensorBoard(log_path+"/ValLoss/RCNN")
 callback4.set_model(model_classifier)
 names_1 = ['RPN_classifier_loss', 'RPN_regressor_loss']
 names_2 = ['RCNN_classifier_loss', 'RCNN_regressor_loss']
